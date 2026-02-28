@@ -25,6 +25,7 @@
     },
     "dependencies": {
         "phaser": "^3.90.0",
+        "rot-js": "^2.2.1",
         "terser": "^5.39.0"
     }
 }
