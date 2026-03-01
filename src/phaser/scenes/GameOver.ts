@@ -1,4 +1,5 @@
 import { Scene } from 'phaser';
+import { SceneKeys } from './Scenes';
 
 export class GameOver extends Scene
 {
@@ -7,7 +8,7 @@ export class GameOver extends Scene
 
     constructor ()
     {
-        super('GameOver');
+        super(SceneKeys.GameOver);
     }
 
     create ()
@@ -24,7 +25,7 @@ export class GameOver extends Scene
 
         this.input.once('pointerdown', () => {
 
-            this.scene.start('MainMenu');
+            this.scene.start(SceneKeys.MainMenu);
 
         });
     }

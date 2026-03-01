@@ -6,8 +6,8 @@
 body {
     margin: 0;
     padding: 0;
-    color: #f0f0f0;
-    background-color: #0f0f0f;
+    color: #fff;
+    background-color: #000;
 }
 
 
@@ -23,4 +23,24 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
+}
+
+ul {
+    display: flex;
+    flex-direction: row;
+    list-style-type: none;
+    padding: 1rem;
+}
+
+li {
+    padding: 1rem;
+    background-color: #000;
+    border: 0.125rem solid #fff;
+}
+
+li:hover {
+    background-color: #fff;
+    color: #000;
+    cursor: pointer;
+    font-weight: bold;
 }

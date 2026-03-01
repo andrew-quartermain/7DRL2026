@@ -1,9 +1,5 @@
-import { Boot } from './scenes/Boot';
-import { GameOver } from './scenes/GameOver';
-import { MainGame as MainGame } from './scenes/MainGame';
-import { MainMenu } from './scenes/MainMenu';
 import { AUTO, Game, Scale } from 'phaser';
-import { Preloader } from './scenes/Preloader';
+import { SCENES } from './scenes/Scenes';
 
 //  Find out more information about the Game Config at:
 //  https://docs.phaser.io/api-documentation/typedef/types-core#gameconfig
@@ -20,13 +16,7 @@ const config: Phaser.Types.Core.GameConfig = {
     dom: {
         createContainer: true,
     },
-    scene: [
-        Boot,
-        Preloader,
-        MainMenu,
-        MainGame,
-        GameOver
-    ]
+    scene: SCENES,
 };
 
 const StartGame = (parent: string) => {
