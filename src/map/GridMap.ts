@@ -7,7 +7,7 @@ class MapCell {
     constructor(private map: GridMap) {}
 
     get terrain(): number {
-        return this.map.terrain[this.idx];
+        return this.map.terrain[this.idx] ?? 0;
     }
 }
 
@@ -18,7 +18,7 @@ export class GridMap {
 
     constructor(public width: number, public height: number) {
         this.size = width * height;
-        this.terrain = Array(this.size).fill(0);
+        this.terrain = Array(this.size);
         this.proxy = new MapCell(this);
     }
 
@@ -60,7 +60,7 @@ export const RandomMap: MapGenerator = (map) => {
             x = RNG.getUniformInt(0,map.width);
             y = RNG.getUniformInt(0,map.height);
         }
-        map.putTerrainAt(19, x, y);
+        map.putTerrainAt(17, x, y);
     }
     return map
 }

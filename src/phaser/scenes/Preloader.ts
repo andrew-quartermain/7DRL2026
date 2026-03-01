@@ -26,8 +26,8 @@ export class Preloader extends Scene {
     }
 
     preload() {
-        //  Load the assets for the game - Replace with your own assets
         this.load.setPath('assets');
+
         this.load.spritesheet(
             TextureKeys.Source,
             TextureKeys.Source,
@@ -40,15 +40,9 @@ export class Preloader extends Scene {
     }
 
     create() {
-        //  When all the assets have loaded, it's often worth creating global objects here that the rest of the game can use.
-        //  For example, you can define global animations here, so we can use them in other scenes.
-
-        const sourceTexture = this.textures.get(TextureKeys.Source);
-
         prepareSpritesheets(this);
-        sourceTexture.setFilter(Phaser.Textures.FilterMode.NEAREST);
 
-        //  Move to the MainMenu. You could also swap this for a Scene Transition, such as a camera fade.
+        //  Move to the MainMenu. 
         this.scene.start(SceneKeys.MainMenu);
     }
 }
@@ -59,55 +53,29 @@ const PIXEL_DETAIL = 0x8080ff;
 
 function prepareSpritesheets(scene: Phaser.Scene) {
 
+    createTilesets(scene);
+    
+    const keys = [
+        TextureKeys.Dark,
+        TextureKeys.Light,
+        TextureKeys.Details,
+    ];
 
-
-    extrudeTiles(scene);
-
-    scene.textures.addSpriteSheet(
+    for (const key of keys) {
+        scene.textures.addSpriteSheet(
         '',
-        scene.textures.get(TextureKeys.Extruded),
+        scene.textures.get(key),
         {
             frameWidth: 24,
             frameHeight: 24,
             margin: 1,
             spacing: 1
         });
-    scene.textures.addSpriteSheet(
-        '',
-        scene.textures.get(TextureKeys.Dark),
-        {
-            frameWidth: 24,
-            frameHeight: 24,
-            margin: 1,
-            spacing: 1
-        });
-
-    scene.textures.addSpriteSheet(
-        '',
-        scene.textures.get(TextureKeys.Light),
-        {
-            frameWidth: 24,
-            frameHeight: 24,
-            margin: 1,
-            spacing: 1
-        });
-
-    scene.textures.addSpriteSheet(
-        '',
-        scene.textures.get(TextureKeys.Details),
-        {
-            frameWidth: 24,
-            frameHeight: 24,
-            margin: 1,
-            spacing: 1
-        });
-
-    scene.textures.get(TextureKeys.Dark).setFilter(Phaser.Textures.FilterMode.NEAREST);
-    scene.textures.get(TextureKeys.Light).setFilter(Phaser.Textures.FilterMode.NEAREST);
-    scene.textures.get(TextureKeys.Details).setFilter(Phaser.Textures.FilterMode.NEAREST);
+        scene.textures.get(key).setFilter(Phaser.Textures.FilterMode.NEAREST);
+    }
 }
 
-function extrudeTiles(scene: Phaser.Scene) {
+function createTilesets(scene: Phaser.Scene) {
     const tex = scene.textures.get(TextureKeys.Source).getSourceImage(0) as HTMLImageElement;
 
     const SIZE = 1 + ((24 + 1) * 16);

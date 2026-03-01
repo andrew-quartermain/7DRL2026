@@ -18,13 +18,13 @@ export class MainMenu extends Scene
         const { width, height } = this.scale; 
 
         for (let i = 0; i < 8; i++) {
-            this.add.image(width * ((i + 0.5) / 8), height * 0.33, TextureKeys.Dark, i % 4).setScale(8);
+            this.add.image(width * ((i + 0.5) / 8), height * 0.33, TextureKeys.Dark, 32 + i % 4).setScale(8);
         }
         for (let i = 0; i < 8; i++) {
-            this.add.image(width * ((i + 0.5) / 8), height * 0.5, TextureKeys.Light, i % 4).setScale(8);
+            this.add.image(width * ((i + 0.5) / 8), height * 0.5, TextureKeys.Light, 32 + i % 4).setScale(8);
         }
         for (let i = 0; i < 8; i++) {
-            this.add.image(width * ((i + 0.5) / 8), height * 0.67, TextureKeys.Details, i % 4).setScale(8);
+            this.add.image(width * ((i + 0.5) / 8), height * 0.67, TextureKeys.Details, 32 + i % 4).setScale(8);
         }
 
         this.add.image(0,0, TextureKeys.Extruded);
