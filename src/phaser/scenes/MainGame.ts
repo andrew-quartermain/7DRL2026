@@ -4,6 +4,7 @@ import { GridMap, RandomMap } from '../../map/GridMap';
 import { TextureKeys } from '../Keys';
 import { RNG } from 'rot-js';
 import { addComponent, addEntity, createWorld } from 'bitecs';
+import { Engine } from '../../engine/Engine';
 
 class TileProxy {
     x!: number;
@@ -38,17 +39,15 @@ export class MainGame extends Scene {
     }
 
     create() {
-        this.cameras.main.zoom = 4;
-        const WIDTH = 80;
-        const HEIGHT = 45;
+        const engine = new Engine();
+        
         const TILE_SIZE = 24;
 
-        const map = new GridMap(WIDTH, HEIGHT);
-        map.generate(RandomMap);
+        const map = engine.galaxyMap;
 
         const grid = this.make.tilemap({
-            width: WIDTH,
-            height: HEIGHT,
+            width: map.width,
+            height: map.height,
             tileWidth: TILE_SIZE,
             tileHeight: TILE_SIZE,
         });
@@ -59,7 +58,7 @@ export class MainGame extends Scene {
             TextureKeys.Details,
         ];
         const COLORS: Phaser.Types.Display.ColorObject[][] = [
-            Phaser.Display.Color.HSVColorWheel(0.4, 0.6),
+            Phaser.Display.Color.HSVColorWheel(0.5, 0.3),
             Phaser.Display.Color.HSVColorWheel(0.3, 0.7),
             Phaser.Display.Color.HSVColorWheel(0.7, 0.75),
         ];
@@ -74,6 +73,13 @@ export class MainGame extends Scene {
         for (const key of keys) {
             layers[key] = grid.createBlankLayer(key, key) as Phaser.Tilemaps.TilemapLayer;
         }
+        const info = grid.createBlankLayer('info', TextureKeys.Light);
+        if (!info) return
+        info.fill(16).setTint(0x201080);
+        const entranceTile = info.putTileAt(1, map.entrance.x, map.entrance.y);
+        entranceTile.tint = 0xff0000;
+        const exitTile = info.putTileAt(1, map.exit.x, map.exit.y);
+        exitTile.tint = 0x0000ff;
 
         if (!bg) {
             throw new Error('Tilemap layer cannot be null!!!');
@@ -82,15 +88,14 @@ export class MainGame extends Scene {
         bg.fill(1);
         bg.setTint(0x000000);
 
-        
 
-        for (let y = 0; y < HEIGHT; y++) {
-            for (let x = 0; x < WIDTH; x++) {
+        for (let y = 0; y < map.height; y++) {
+            for (let x = 0; x < map.width; x++) {
 
                 const terrain = map.getTileAt(x, y).terrain;
                 if (!terrain) continue
                 let i = 0;
-                const sprite = RNG.getUniformInt(32,35);
+                const sprite = RNG.getUniformInt(48,51);
                 const rotation = RNG.getUniformInt(0,3) * Math.PI / 2;
                 const tint = RNG.getUniformInt(0,360);
 
@@ -105,16 +110,17 @@ export class MainGame extends Scene {
         }
 
         this.input.on(Phaser.Input.Events.POINTER_MOVE, (pointer: Phaser.Input.Pointer) => {
-            for (let y = 0; y < HEIGHT; y++) {
-                for (let x = 0; x < WIDTH; x++) {
-                    const tile = bg.getTileAt(x, y);
-                    tile.tint = 0x000000;
+            for (let y = 0; y < map.height; y++) {
+                for (let x = 0; x < map.width; x++) {
+                    const tile = info.getTileAt(x, y);
+                    tile.tint = 0x201080;
                 }
             }
             const x = Math.floor(pointer.worldX / TILE_SIZE);
             const y = Math.floor(pointer.worldY / TILE_SIZE);
 
-            const tile = bg.getTileAt(x, y);
+            const tile = info.getTileAt(x, y);
+            if (!tile) return
             tile.tint = 0x8800cc;
         });
 
@@ -127,7 +133,12 @@ export class MainGame extends Scene {
         zoomOut?.on(Phaser.Input.Keyboard.Events.DOWN, () => {
             this.cameras.main.zoom -= 1;
         });
+
+        this.cameras.main.zoom = 3;
+        this.cameras.main.centerOn(bg.getCenter().x, bg.getCenter().y);
     }
+
+    
 }
 
 

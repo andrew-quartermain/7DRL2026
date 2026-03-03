@@ -4,7 +4,7 @@ type MapGenerator = (map: GridMap) => GridMap;
 
 class MapCell {
     idx: number;
-    constructor(private map: GridMap) {}
+    constructor(private map: GridMap) { }
 
     get terrain(): number {
         return this.map.terrain[this.idx] ?? 0;
@@ -15,6 +15,8 @@ export class GridMap {
     size!: number;
     terrain!: number[];
     proxy!: MapCell;
+    entrance!: {x: number, y: number};
+    exit!: {x: number, y: number};
 
     constructor(public width: number, public height: number) {
         this.size = width * height;
@@ -40,7 +42,7 @@ export class GridMap {
     getTileAt(x: number, y: number): MapCell {
         const idx = this.indexAt(x, y);
         if (idx === -1) {
-            
+
         }
         this.proxy.idx = idx;
         return this.proxy
@@ -51,16 +53,27 @@ export class GridMap {
     }
 }
 
-export const RandomMap: MapGenerator = (map) => {
-    const n = Math.floor(map.size / 16);
-    for (let i = 0; i < n; i++) {
-        let x = RNG.getUniformInt(0,map.width);
-        let y = RNG.getUniformInt(0,map.height);
-        while (map.getTileAt(x,y).terrain) {
-            x = RNG.getUniformInt(0,map.width);
-            y = RNG.getUniformInt(0,map.height);
+export const RandomMap = (options: { rng: typeof RNG, min: number, max: number }): MapGenerator => {
+    return (map) => {
+        const { rng, min, max } = options;
+        const n = rng.getUniformInt(min, max);
+        for (let i = 0; i < n; i++) {
+            let x = RNG.getUniformInt(0, map.width);
+            let y = RNG.getUniformInt(0, map.height);
+            while (map.getTileAt(x, y).terrain) {
+                x = RNG.getUniformInt(0, map.width);
+                y = RNG.getUniformInt(0, map.height);
+            }
+            map.putTerrainAt(17, x, y);
         }
-        map.putTerrainAt(17, x, y);
+        map.entrance = {x: 3, y: rng.getUniformInt(5,10)};
+        map.exit = {x: 17, y: rng.getUniformInt(5, 10)};
+        return map
     }
-    return map
+}
+
+export const GalaxyMapGenerator = (options: {}): MapGenerator => {
+    return (map: GridMap) => {
+        return map
+    }
 }
