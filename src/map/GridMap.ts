@@ -21,7 +21,10 @@ export class GridMap {
     constructor(public width: number, public height: number) {
         this.size = width * height;
         this.terrain = Array(this.size);
+
         this.proxy = new MapCell(this);
+        this.entrance = {x: 0, y: 0};
+        this.exit = {x: width - 1, y: height - 1};
     }
 
     indexAt(x: number, y: number): number {
@@ -51,11 +54,23 @@ export class GridMap {
     generate(generator: MapGenerator): GridMap {
         return generator(this)
     }
+
+    setEntrance(x: number, y: number): this {
+        this.entrance.x = x;
+        this.entrance.y = y; 
+        return this
+    }
+
+    setExit(x: number, y: number): this {
+        this.exit.x = x;
+        this.exit.y = y; 
+        return this
+    }
 }
 
-export const RandomMap = (options: { rng: typeof RNG, min: number, max: number }): MapGenerator => {
+export const RandomMap = (rng: typeof RNG, options: { min: number, max: number }): MapGenerator => {
     return (map) => {
-        const { rng, min, max } = options;
+        const { min, max } = options;
         const n = rng.getUniformInt(min, max);
         for (let i = 0; i < n; i++) {
             let x = RNG.getUniformInt(0, map.width);
@@ -72,8 +87,10 @@ export const RandomMap = (options: { rng: typeof RNG, min: number, max: number }
     }
 }
 
-export const GalaxyMapGenerator = (options: {}): MapGenerator => {
+export const GalaxyMapGenerator = (rng: typeof RNG): MapGenerator => {
     return (map: GridMap) => {
+        map.setEntrance(2, RNG.getUniformInt(5,10));
+        map.setExit(17, RNG.getUniformInt(5,10));
         return map
     }
 }

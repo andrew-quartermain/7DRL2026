@@ -43,7 +43,7 @@ export class Preloader extends Scene {
         prepareSpritesheets(this);
 
         //  Move to the MainMenu. 
-        this.scene.start(SceneKeys.MainMenu);
+        this.scene.start(SceneKeys.MainGame);
     }
 }
 
@@ -102,6 +102,7 @@ function createTilesets(scene: Phaser.Scene) {
                     dark?.setPixel(dx, dy, 255, 255, 255, 255);
                     break;
                 case PIXEL_LIGHT:
+                    dark?.setPixel(dx,dy,255,255,255,255);
                     light?.setPixel(dx, dy, 255, 255, 255, 255);
                     break;
                 case PIXEL_DETAIL:
