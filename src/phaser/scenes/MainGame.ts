@@ -6,6 +6,9 @@ import { RNG } from 'rot-js';
 import { addComponent, addEntity, createWorld, observe, onAdd, query } from 'bitecs';
 import { Engine } from '../../engine/Engine';
 import { CurrentLevel, Player, Position, Renderable } from '../../engine/Components';
+import EventBus from '../events/EventBus';
+
+export type Moves = 'bump' | 'wait' | 'turn-left' | 'turn-right';
 
 const TILE_SIZE = 24;
 const TILEMAP_KEYS = [
@@ -14,11 +17,7 @@ const TILEMAP_KEYS = [
     TextureKeys.Details,
 ];
 
-const COLORS: Phaser.Types.Display.ColorObject[][] = [
-    Phaser.Display.Color.HSVColorWheel(0.5, 0.3),
-    Phaser.Display.Color.HSVColorWheel(0.3, 0.7),
-    Phaser.Display.Color.HSVColorWheel(0.7, 0.75),
-];
+
 
 class TileProxy {
     x!: number;
@@ -32,6 +31,12 @@ class TileProxy {
     ) {
         this.x = -1;
         this.y = -1;
+    }
+
+    clear() {
+        this._dark.fill(0);
+        this._light.fill(0);
+        this._details.fill(0);
     }
 
     set glyph(idx: number) {
@@ -91,6 +96,7 @@ export class MainGame extends Scene {
 
         const zoomIn = this.input.keyboard?.addKey('o');
         const zoomOut = this.input.keyboard?.addKey('p');
+        const fs = this.input.keyboard?.addKey('f');
 
         zoomIn?.on(Phaser.Input.Keyboard.Events.DOWN, () => {
             this.cameras.main.zoom += 1;
@@ -98,21 +104,37 @@ export class MainGame extends Scene {
         zoomOut?.on(Phaser.Input.Keyboard.Events.DOWN, () => {
             this.cameras.main.zoom -= 1;
         });
-
-        const keys = this.input.keyboard?.addKeys({
-            up: Phaser.Input.Keyboard.KeyCodes.UP,
-            down: Phaser.Input.Keyboard.KeyCodes.DOWN,
-            left: Phaser.Input.Keyboard.KeyCodes.LEFT,
-            right: Phaser.Input.Keyboard.KeyCodes.RIGHT,
-        }, true, true);
-
+        fs?.on(Phaser.Input.Keyboard.Events.DOWN, () => {
+            if (document.fullscreenElement) {
+                return document.exitFullscreen();
+            }
+            document.getElementById('app')?.requestFullscreen();
+        });
         
 
+        
+        const mapping = new Map<string, Moves>();
+        mapping.set('ArrowUp', 'bump');
+        mapping.set('ArrowDown', 'wait');
+        mapping.set('ArrowLeft', 'turn-left');
+        mapping.set('ArrowRight', 'turn-right');
+        
+        this.input.keyboard?.on(Phaser.Input.Keyboard.Events.ANY_KEY_DOWN, (event: KeyboardEvent) => {
+            const move = mapping.get(event.key);
+            if (!move) return
+            this.engine.move(move);
+        });
+
+        
+        EventBus.on('next-turn', this.updateEntities, this);
         this.cameras.main.zoom = 2;
 
     }
 
     updateEntities() {
+
+        this.tileProxy.clear();
+
         const entities = query(this.engine.world, [Position, Renderable, CurrentLevel])
         for (const eid of entities) {
             const x = Position.x[eid];

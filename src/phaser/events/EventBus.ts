@@ -1,4 +1,4 @@
-export type GameEvent = 'start-game';
+export type GameEvent = 'start-game' | 'next-turn';
 
 class EventBus extends Phaser.Events.EventEmitter {
     emit(event: GameEvent, ...args: any[]): boolean {

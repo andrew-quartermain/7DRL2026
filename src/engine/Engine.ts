@@ -4,8 +4,25 @@ import { GalaxyMapGenerator, GridMap, RandomMap } from "../map/GridMap";
 import { Random } from "../rng/Random";
 import { CurrentLevel, Player, Position, Renderable } from "./Components";
 import { RNG } from "rot-js";
+import { Moves } from "../phaser/scenes/MainGame";
+import EventBus from "../phaser/events/EventBus";
 
+const DIRECTIONS = [
+    [ 1,  0 ],
+    [ 1,  1 ],
+    [ 0,  1 ],
+    [-1,  1 ],
+    [-1,  0 ],
+    [-1, -1 ],
+    [ 0, -1 ],
+    [ 1, -1 ],
+];
 
+const COLORS: Phaser.Types.Display.ColorObject[][] = [
+    Phaser.Display.Color.HSVColorWheel(0.5, 0.3),
+    Phaser.Display.Color.HSVColorWheel(0.3, 0.7),
+    Phaser.Display.Color.HSVColorWheel(0.7, 0.75),
+];
 
 type EngineOptions = {
     seed?: string | number;
@@ -28,7 +45,7 @@ export class Engine {
         this.levelMaps.set('galaxy', galaxyMap);
 
         this.world = createWorld({
-            
+
         });
 
         // add a null entity (id = 0)
@@ -45,7 +62,7 @@ export class Engine {
         Renderable.show[this.playerId] = 3;
 
         // create opening level
-        const {x,y} = galaxyMap.entrance;
+        const { x, y } = galaxyMap.entrance;
         const level = this.loadLevel(x, y);
 
         // spawn player
@@ -58,17 +75,24 @@ export class Engine {
         for (let i = 0; i < 100; i++) {
             const eid = addEntity(this.world);
             addComponent(this.world, eid, Renderable);
-            Renderable.sprite[eid] = RNG.getUniformInt(32,35);
-            Renderable.dark[eid] = 0x808080;
-            Renderable.light[eid] = 0xc0c0c0;
-            Renderable.detail[eid] = 0x2080c0;
-            Renderable.show[eid] = RNG.getUniformInt(1,3);
+            Renderable.sprite[eid] = RNG.getUniformInt(32, 35);
+            const tint = RNG.getUniformInt(0,360);
+            Renderable.dark[eid] = COLORS[0][tint].color;
+            Renderable.light[eid] = COLORS[1][(tint + 20) % 359].color;
+            Renderable.detail[eid] = COLORS[0][(tint * tint + 20) % 360].color;
+            Renderable.show[eid] = RNG.getUniformInt(1, 3);
 
             addComponent(this.world, eid, Position);
-            Position.x[eid] = RNG.getUniformInt(1,38);
-            Position.y[eid] = RNG.getUniformInt(1,18);
-            Position.dir[eid] = RNG.getUniformInt(0,7);
+            Position.x[eid] = RNG.getUniformInt(1, 38);
+            Position.y[eid] = RNG.getUniformInt(1, 18);
+            Position.dir[eid] = RNG.getUniformInt(0, 7);
             addComponent(this.world, eid, CurrentLevel);
+
+            level.addMob(
+                Position.x[eid],
+                Position.y[eid],
+                eid,
+            );
         }
 
         this.scheduler = new Action();
@@ -85,10 +109,50 @@ export class Engine {
         return map
     }
 
+    move(move: Moves) {
+        const x = Position.x[this.playerId];
+        const y = Position.y[this.playerId];
+        const dir = Position.dir[this.playerId];
+
+        switch (move) {
+            case "bump":
+                const [dx, dy] = DIRECTIONS[dir];
+                const toX = x + dx;
+                const toY = y + dy;
+                const map = this.getCurrentMap();
+                if (!map.inBounds(toX, toY)) {
+                    return
+                }
+                if (map.getTileAt(toX,toY).mob) {
+                    console.log('blocked!');
+                    return
+                }
+                Position.x[this.playerId] += dx;
+                Position.y[this.playerId] += dy;
+                break;
+            case "wait":
+                break;
+            case "turn-left":
+                Position.dir[this.playerId] = (8 + dir - 1) % 8;
+                break;
+            case "turn-right":
+                Position.dir[this.playerId] = (8 + dir + 1) % 8;
+                break;
+            default:
+
+        }
+
+        this.triggerNextTurn();
+    }
+
+    triggerNextTurn() {
+        EventBus.emit('next-turn', 'hello');
+    }
+
     private createLevel(x: number, y: number): GridMap {
         const key = `${x},${y}`;
         const rng = this.random.getRNG(key);
-        const map = new GridMap(40,20);
+        const map = new GridMap(40, 20);
 
         // TODO create level & spawn entities
 
@@ -105,7 +169,7 @@ export class Engine {
     }
 
     start() {
-        
+
     }
 
     async update() {

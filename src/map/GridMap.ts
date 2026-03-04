@@ -9,22 +9,42 @@ class MapCell {
     get terrain(): number {
         return this.map.terrain[this.idx] ?? 0;
     }
+    get mob(): number {
+        return this.map.mobs[this.idx] ?? 0;
+    }
 }
 
 export class GridMap {
     size!: number;
     terrain!: number[];
+    mobs!: number[];
     proxy!: MapCell;
-    entrance!: {x: number, y: number};
-    exit!: {x: number, y: number};
+    entrance!: { x: number, y: number };
+    exit!: { x: number, y: number };
 
     constructor(public width: number, public height: number) {
         this.size = width * height;
         this.terrain = Array(this.size);
+        this.mobs = Array(this.size);
 
         this.proxy = new MapCell(this);
-        this.entrance = {x: 0, y: 0};
-        this.exit = {x: width - 1, y: height - 1};
+        this.entrance = { x: 0, y: 0 };
+        this.exit = { x: width - 1, y: height - 1 };
+    }
+
+    addMob(x: number, y: number, eid: number) {
+        const idx = this.indexAt(x, y);
+        if (idx === -1) {
+            console.warn(`Mob ${eid} cannot be placed at ${x}, ${y}. 
+                Position is out of bounds.`);
+            return
+        }
+        if (this.mobs[idx]) {
+            console.warn(`Mob ${eid} cannot be placed at ${x}, ${y}. 
+                ${this.mobs[idx]} is already there!`);
+            return
+        }
+        this.mobs[idx] = eid;
     }
 
     indexAt(x: number, y: number): number {
@@ -42,6 +62,10 @@ export class GridMap {
         this.terrain[idx] = type;
     }
 
+    inBounds(x: number, y: number): boolean {
+        return this.indexAt(x, y) !== -1;
+    }
+
     getTileAt(x: number, y: number): MapCell {
         const idx = this.indexAt(x, y);
         if (idx === -1) {
@@ -57,13 +81,13 @@ export class GridMap {
 
     setEntrance(x: number, y: number): this {
         this.entrance.x = x;
-        this.entrance.y = y; 
+        this.entrance.y = y;
         return this
     }
 
     setExit(x: number, y: number): this {
         this.exit.x = x;
-        this.exit.y = y; 
+        this.exit.y = y;
         return this
     }
 }
@@ -81,16 +105,16 @@ export const RandomMap = (rng: typeof RNG, options: { min: number, max: number }
             }
             map.putTerrainAt(17, x, y);
         }
-        map.entrance = {x: 3, y: rng.getUniformInt(5,10)};
-        map.exit = {x: 17, y: rng.getUniformInt(5, 10)};
+        map.entrance = { x: 3, y: rng.getUniformInt(5, 10) };
+        map.exit = { x: 17, y: rng.getUniformInt(5, 10) };
         return map
     }
 }
 
 export const GalaxyMapGenerator = (rng: typeof RNG): MapGenerator => {
     return (map: GridMap) => {
-        map.setEntrance(2, RNG.getUniformInt(5,10));
-        map.setExit(17, RNG.getUniformInt(5,10));
+        map.setEntrance(2, RNG.getUniformInt(5, 10));
+        map.setExit(17, RNG.getUniformInt(5, 10));
         return map
     }
 }
