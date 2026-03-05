@@ -122,7 +122,7 @@ export class MainGame extends Scene {
         this.input.keyboard?.on(Phaser.Input.Keyboard.Events.ANY_KEY_DOWN, (event: KeyboardEvent) => {
             const move = mapping.get(event.key);
             if (!move) return
-            this.engine.move(move);
+            this.engine.playerMove(move);
         });
 
         
@@ -143,7 +143,7 @@ export class MainGame extends Scene {
             this.tileProxy.y = y;
 
 
-            this.tileProxy.rotation = Position.dir[eid] * Math.PI / 4;
+            this.tileProxy.rotation = Position.facing[eid] * Math.PI / 4;
             this.tileProxy.glyph = Renderable.sprite[eid];
             this.tileProxy.dark = Renderable.dark[eid];
             this.tileProxy.light = Renderable.light[eid];

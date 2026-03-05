@@ -47,6 +47,14 @@ export class GridMap {
         this.mobs[idx] = eid;
     }
 
+    moveMob(fromX: number, fromY: number, toX: number, toY: number) {
+        let src = this.indexAt(fromX, fromY);
+        let mob = this.mobs[src];
+        let dst = this.indexAt(toX, toY);
+        this.mobs[dst] = mob;
+        delete this.mobs[src];
+    }
+
     indexAt(x: number, y: number): number {
         if (x < 0 || x >= this.width || y < 0 || y >= this.height) {
             return -1
